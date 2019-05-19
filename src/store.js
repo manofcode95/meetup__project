@@ -17,7 +17,7 @@ export default new Vuex.Store({
         date: 'May 26th, 2019',
         time: '12:30',
         message: 'this is a new meetup',
-        id: '1'
+        id: '23'
       },
       {
         name: 'Tokyo meetup',
