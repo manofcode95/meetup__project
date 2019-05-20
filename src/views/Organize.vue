@@ -8,10 +8,10 @@
               <h2 class="text-uppercase display-1">Create new meetup</h2>
               <app-alert v-if="error"></app-alert>
             </v-flex>
-            <!-- <v-flex xs12 v-if="loading">
-              <add-loading/>
-            </v-flex>-->
-            <v-flex xs12>
+            <v-flex xs12 v-if="loading">
+              <app-loading></app-loading>
+            </v-flex>
+            <v-flex xs12 v-else>
               <v-layout row wrap>
                 <v-flex xs12>
                   <v-text-field
@@ -128,14 +128,6 @@ export default {
           alert("Please add a valid image");
         }
       }
-    }
-  },
-  computed: {
-    loading() {
-      return this.$store.getters.getLoading;
-    },
-    error() {
-      return this.$store.getters.getError;
     }
   }
 };
