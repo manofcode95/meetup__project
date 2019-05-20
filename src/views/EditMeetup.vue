@@ -9,7 +9,7 @@
         <v-card-title class="headline grey lighten-2" primary-title>Edit Meetup</v-card-title>
 
         <v-card-text>
-          <v-form @submit.prevent="onSubmit" ref="meetupForm">
+          <v-form @submit.prevent="submitEdit" ref="meetupForm">
             <v-layout wrap row>
               <v-flex xs12 v-if="loading">
                 <app-loading></app-loading>
@@ -95,7 +95,18 @@ export default {
   },
   methods: {
     submitEdit() {
-      dislog = false;
+      this.dialog = false;
+      this.$store.dispatch("updateMeetup", {
+        id: this.meetup.id,
+        creator: this.meetup.creator,
+        title: this.title,
+        location: this.location,
+        imageUrl: this.imageUrl,
+        description: this.description,
+        date: this.date,
+        time: this.time,
+        image: this.image
+      });
     },
     onPickFile() {
       this.$refs.imgUpload.click();

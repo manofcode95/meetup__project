@@ -129,6 +129,14 @@ export default {
         }
       }
     }
+  },
+  computed: {
+    loading() {
+      return this.$store.getters.getLoading;
+    },
+    error() {
+      return this.$store.getters.getError;
+    }
   }
 };
 </script>

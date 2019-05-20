@@ -15,15 +15,9 @@ export default new Vuex.Store({
   },
   getters: {
     meetups(state) {
-      // if (state.user) {
-      //   return state.loadedMeetups.sort((meetupA, meetupB) => {
-      //     return meetupA.date < meetupB.date;
-      //   });
-      // }
       return state.loadedMeetups.sort((meetupA, meetupB) => {
         return meetupA.date < meetupB.date;
-      })
-
+      });
     },
     loadedMeetup: (state) => (id) => {
       if (state.user) {
@@ -42,8 +36,7 @@ export default new Vuex.Store({
       }
       return false;
     },
-    isCreator: (state) => creatorId => state.user.id == creatorId
-
+    isCreator: (state) => (creatorId) => state.user.id == creatorId
   },
   mutations: {
     setUser(state, payload) {
@@ -72,7 +65,25 @@ export default new Vuex.Store({
     afterLoadingPage(state) {
       (state.error = null), (state.loading = false);
     },
-
+    updateMeetup(state, payload) {
+      console.log(payload);
+      let meetup = state.loadedMeetups.find((el) => el.id == payload.id);
+      if (payload.title != meetup.title) {
+        meetup.title = payload.title;
+      }
+      if (payload.location != meetup.location) {
+        meetup.location = payload.location;
+      }
+      if (payload.description != meetup.description) {
+        meetup.description = payload.description;
+      }
+      if (payload.date != meetup.date) {
+        meetup.date = payload.date;
+      }
+      if (payload.time != meetup.time) {
+        meetup.time = payload.time;
+      }
+    }
   },
   actions: {
     submitSignUp({ commit, state, dispatch }, payload) {
@@ -131,7 +142,7 @@ export default new Vuex.Store({
     },
     createMeetup({ commit, state }, payload) {
       if (state.user) {
-        commit('setLoading', true)
+        commit('setLoading', true);
         commit('beforeSubmit');
         let imageName = payload.image.name;
         let ext = imageName.split('.')[1];
@@ -148,8 +159,8 @@ export default new Vuex.Store({
         db.collection('meetups')
           .add(meetup)
           .then((res) => {
-            key = res.id
-            meetup.id = key
+            key = res.id;
+            meetup.id = key;
             return key;
           })
           .then(() => {
@@ -161,11 +172,14 @@ export default new Vuex.Store({
           .then((data) => {
             return data.ref.getDownloadURL();
           })
-          .then(imgData => {
-            meetup.imageUrl = imgData
-            return db.collection('meetups').doc(key).update({ imageUrl: imgData })
-
-          }).then(res => {
+          .then((imgData) => {
+            meetup.imageUrl = imgData;
+            return db
+              .collection('meetups')
+              .doc(key)
+              .update({ imageUrl: imgData });
+          })
+          .then((res) => {
             console.log(meetup);
             commit('createMeetup', meetup);
             router.push({ name: 'meetups' });
@@ -177,6 +191,61 @@ export default new Vuex.Store({
             commit('setError', err.message);
           });
       }
+    },
+    updateMeetup({ commit, state }, payload) {
+      console.log(payload);
+      let meetup = state.loadedMeetups.find((el) => el.id == payload.id);
+      let updatedMeetup = {};
+      if (payload.title != meetup.title) {
+        updatedMeetup.title = payload.title;
+      }
+      if (payload.location != meetup.location) {
+        updatedMeetup.location = payload.location;
+      }
+      if (payload.description != meetup.description) {
+        updatedMeetup.description = payload.description;
+      }
+      if (payload.date != meetup.date) {
+        updatedMeetup.date = payload.date;
+      }
+      if (payload.time != meetup.time) {
+        updatedMeetup.time = payload.time;
+      }
+      console.log(updatedMeetup);
+      db.collection('meetups')
+        .doc(`${payload.id}`)
+        .update(updatedMeetup)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      if (payload.image) {
+        firebase
+          .storage()
+          .ref(`meetups/${payload.id}.${ext}`)
+          .put(payload.image)
+          .then((data) => {
+            return data.ref.getDownloadURL();
+          })
+          .then((imgData) => {
+            updatedMeetup.imageUrl = imgData;
+            return db
+              .collection('meetups')
+              .doc(payload.id)
+              .update({ imageUrl: imgData });
+          })
+          .then((res) => {
+            commit('setLoading', false);
+          })
+          .catch((err) => {
+            console.log(err);
+            commit('setLoading', false);
+            commit('setError', err.message);
+          });
+      }
+      commit('updateMeetup', payload);
     },
     getMeetupsData({ state, commit }) {
       if (state.user) {
