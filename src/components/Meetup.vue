@@ -1,10 +1,6 @@
 <template>
   <v-card>
-    <v-img
-      class="white--text"
-      height="200px"
-      src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
-    ></v-img>
+    <v-img class="white--text" height="200px" :src="meetup.imageUrl"></v-img>
     <v-card-title>
       <div>
         <p class="grey--text">{{meetup.title}}</p>
@@ -20,6 +16,7 @@
 </template>
 
 <script>
+import EditMeetup from "@/views/EditMeetup.vue";
 export default {
   props: ["meetup"],
   methods: {

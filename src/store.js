@@ -11,41 +11,23 @@ export default new Vuex.Store({
     user: null,
     loading: false,
     error: null,
-    meetupsList: [
-      {
-        name: 'new york meetup',
-        date: 'May 26th, 2019',
-        time: '12:30',
-        message: 'this is a new meetup',
-        id: '23'
-      },
-      {
-        name: 'Tokyo meetup',
-        date: 'May 26th, 2019',
-        time: '12:30',
-        message: 'this is a new meetup',
-        id: '2'
-      },
-      {
-        name: 'Vietnam meetup',
-        date: 'May 26th, 2019',
-        time: '12:30',
-        message: 'this is a new meetup',
-        id: '3'
-      }
-    ]
+    loadedMeetups: []
   },
   getters: {
     meetups(state) {
-      if (state.user.registeredMeetups) {
-        return state.user.registeredMeetups.sort((meetupA, meetupB) => {
-          return meetupA.date < meetupB.date;
-        });
-      }
+      // if (state.user) {
+      //   return state.loadedMeetups.sort((meetupA, meetupB) => {
+      //     return meetupA.date < meetupB.date;
+      //   });
+      // }
+      return state.loadedMeetups.sort((meetupA, meetupB) => {
+        return meetupA.date < meetupB.date;
+      })
+
     },
     loadedMeetup: (state) => (id) => {
       if (state.user) {
-        return state.user.registeredMeetups.find((meetup) => meetup.id == id);
+        return state.loadedMeetups.find((meetup) => meetup.id == id);
       }
     },
     getLoading(state) {
@@ -59,7 +41,9 @@ export default new Vuex.Store({
         return true;
       }
       return false;
-    }
+    },
+    isCreator: (state) => creatorId => state.user.id == creatorId
+
   },
   mutations: {
     setUser(state, payload) {
@@ -79,8 +63,8 @@ export default new Vuex.Store({
     clearError(state) {
       state.error = null;
     },
-    setMeetupsList(state, payload) {
-      state.user.registeredMeetups = payload;
+    createMeetup(state, payload) {
+      state.loadedMeetups.push(payload);
     },
     beforeSubmit(state) {
       (state.error = null), (state.loading = true);
@@ -88,9 +72,7 @@ export default new Vuex.Store({
     afterLoadingPage(state) {
       (state.error = null), (state.loading = false);
     },
-    createMeetup(state, payload) {
-      state.user.registeredMeetups.push(payload);
-    }
+
   },
   actions: {
     submitSignUp({ commit, state, dispatch }, payload) {
@@ -111,9 +93,10 @@ export default new Vuex.Store({
           localStorage.setItem('user', JSON.stringify(state.user));
           router.push({ name: 'meetups' });
         })
-        .catch((error) => {
+        .catch((err) => {
+          console.log(err);
           commit('setLoading', false);
-          commit('setError', error.message);
+          commit('setError', err.message);
         });
     },
     submitLogin({ commit, state, dispatch }, payload) {
@@ -134,6 +117,7 @@ export default new Vuex.Store({
           router.push({ name: 'meetups' });
         })
         .catch((error) => {
+          console.log(err);
           commit('setLoading', false);
           commit('setError', error.message);
         });
@@ -147,6 +131,7 @@ export default new Vuex.Store({
     },
     createMeetup({ commit, state }, payload) {
       if (state.user) {
+        commit('setLoading', true)
         commit('beforeSubmit');
         let imageName = payload.image.name;
         let ext = imageName.split('.')[1];
@@ -158,24 +143,36 @@ export default new Vuex.Store({
           time: payload.time,
           creator: state.user.id
         };
-        console.log(4);
+        let key;
+
         db.collection('meetups')
           .add(meetup)
           .then((res) => {
-            commit('createMeetup', { ...meetup, id: res.id });
-            return res.id;
+            key = res.id
+            meetup.id = key
+            return key;
           })
-          .then((key) => {
+          .then(() => {
             return firebase
               .storage()
               .ref(`meetups/${key}.${ext}`)
               .put(payload.image);
           })
-          .then((res) => {
+          .then((data) => {
+            return data.ref.getDownloadURL();
+          })
+          .then(imgData => {
+            meetup.imageUrl = imgData
+            return db.collection('meetups').doc(key).update({ imageUrl: imgData })
+
+          }).then(res => {
+            console.log(meetup);
+            commit('createMeetup', meetup);
             router.push({ name: 'meetups' });
             commit('setLoading', false);
           })
           .catch((err) => {
+            console.log(err);
             commit('setLoading', false);
             commit('setError', err.message);
           });
@@ -187,17 +184,16 @@ export default new Vuex.Store({
         db.collection('meetups')
           .get()
           .then((data) => {
-            let meetupsList = [];
             data.forEach((item) => {
               let meetup = item.data();
-              meetupsList.push({
+              state.loadedMeetups.push({
                 ...meetup,
                 id: item.id
               });
             });
-            commit('setMeetupsList', meetupsList);
           })
           .catch((err) => {
+            console.log(err);
             commit('setError', err.message);
           });
       }
