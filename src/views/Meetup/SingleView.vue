@@ -20,13 +20,16 @@
             <div class="info--text">{{ meetup.date }} - {{ meetup.location }}</div>
             <div>{{ meetup.description }}</div>
           </v-card-text>
+          <v-card-actions>
+            <v-btn class="text-uppercase primary" @click="register">register</v-btn>
+          </v-card-actions>
         </v-card>
       </v-flex>
     </v-layout>
   </v-container>
 </template>
 <script>
-import EditMeetup from "@/views/EditMeetup";
+import EditMeetup from "@/views/Meetup/EditMeetup";
 export default {
   props: ["id"],
   computed: {
@@ -44,9 +47,7 @@ export default {
     }
   },
   methods: {
-    submitEdit() {
-      dislog = false;
-    },
+    register() {},
     onPickFile() {
       this.$refs.imgUpload.click();
     },

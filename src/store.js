@@ -57,6 +57,7 @@ export default new Vuex.Store({
       state.error = null;
     },
     createMeetup(state, payload) {
+      console.log(3);
       state.loadedMeetups.push(payload);
     },
     beforeSubmit(state) {
@@ -82,6 +83,9 @@ export default new Vuex.Store({
       }
       if (payload.time != meetup.time) {
         meetup.time = payload.time;
+      }
+      if (payload.imageUrl != meetup.imageUrl) {
+        meetup.imageUrl = payload.imageUrl;
       }
     }
   },
@@ -166,7 +170,7 @@ export default new Vuex.Store({
           .then(() => {
             return firebase
               .storage()
-              .ref(`meetups/${key}.${ext}`)
+              .ref(`meetups/${key}`)
               .put(payload.image);
           })
           .then((data) => {
@@ -222,9 +226,11 @@ export default new Vuex.Store({
           console.log(err);
         });
       if (payload.image) {
+        let imageName = payload.image.name;
+        let ext = imageName.split('.')[1];
         firebase
           .storage()
-          .ref(`meetups/${payload.id}.${ext}`)
+          .ref(`meetups/${payload.id}`)
           .put(payload.image)
           .then((data) => {
             return data.ref.getDownloadURL();

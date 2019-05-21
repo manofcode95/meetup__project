@@ -16,44 +16,46 @@ export default new Router({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LogIn.vue')
+      component: () => import('@/views/User/LogIn.vue')
     },
     {
       path: '/signup',
       name: 'signup',
-      component: () => import('@/views/SignUp.vue')
-    },
-    {
-      path: '/meetups',
-      name: 'meetups',
-      component: () => import('@/views/Meetups.vue'),
-      beforeEnter: authGuard
-    },
-    {
-      path: '/meetup/:id',
-      name: 'meetup',
-      props: true,
-      component: () => import('@/views/SingleView.vue'),
-      beforeEnter: authGuard
+      component: () => import('@/views/User/SignUp.vue')
     },
     {
       path: '/profile',
       name: 'profile',
       props: true,
-      component: () => import('@/views/Profile.vue'),
+      component: () => import('@/views/User/Profile.vue'),
       beforeEnter: authGuard
     },
     {
       path: '/logout',
       name: 'logout',
       props: true,
-      component: () => import('@/views/LogOut.vue'),
+      component: () => import('@/views/User/LogOut.vue'),
       beforeEnter: authGuard
     },
     {
+      path: '/meetup/:id',
+      name: 'meetup',
+      props: true,
+      component: () => import('@/views/Meetup/SingleView.vue'),
+      beforeEnter: authGuard
+    },
+    {
+      path: '/meetups',
+      name: 'meetups',
+      component: () => import('@/views/Meetup/Meetups.vue'),
+      beforeEnter: authGuard
+    },
+
+
+    {
       path: '/meetups/new',
       name: 'new',
-      component: () => import('@/views/Organize.vue'),
+      component: () => import('@/views/Meetup/Organize.vue'),
       beforeEnter: authGuard
     }
   ]

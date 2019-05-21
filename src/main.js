@@ -6,9 +6,10 @@ import store from './store';
 import Vuelidate from 'vuelidate';
 import Loading from '@/components/Loading';
 import Alert from '@/components/Alert';
+import trim from "@/filters/trim"
 Vue.use(Vuelidate);
 Vue.config.productionTip = false;
-
+Vue.filter('trim', trim)
 Vue.component('app-loading', Loading);
 Vue.component('app-alert', Alert);
 new Vue({

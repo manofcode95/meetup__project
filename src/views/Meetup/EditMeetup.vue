@@ -1,6 +1,6 @@
 <template>
   <div class="text-xs-center">
-    <v-dialog v-model="dialog" max-width="800" min-width="300">
+    <v-dialog v-model="dialog" max-width="800" min-width="300" persistent>
       <template v-slot:activator="{ on }">
         <v-btn color="red lighten-2" dark v-on="on" depressed>Edit</v-btn>
       </template>
@@ -9,7 +9,7 @@
         <v-card-title class="headline grey lighten-2" primary-title>Edit Meetup</v-card-title>
 
         <v-card-text>
-          <v-form @submit.prevent="submitEdit" ref="meetupForm">
+          <v-form @submit.prevent="onSubmit" ref="meetupForm">
             <v-layout wrap row>
               <v-flex xs12 v-if="loading">
                 <app-loading></app-loading>
@@ -65,7 +65,8 @@
                     <v-divider></v-divider>
                   </v-flex>
                   <v-flex xs12>
-                    <v-btn flat color="primary mt-3 " right type="submit">Edit</v-btn>
+                    <v-btn depressed color="primary mt-3 " right type="submit">Edit</v-btn>
+                    <v-btn depressed color="warning mt-3 " right @click="dialog=false">Close</v-btn>
                   </v-flex>
                 </v-layout>
               </v-flex>
@@ -95,18 +96,7 @@ export default {
   },
   methods: {
     submitEdit() {
-      this.dialog = false;
-      this.$store.dispatch("updateMeetup", {
-        id: this.meetup.id,
-        creator: this.meetup.creator,
-        title: this.title,
-        location: this.location,
-        imageUrl: this.imageUrl,
-        description: this.description,
-        date: this.date,
-        time: this.time,
-        image: this.image
-      });
+      dialog = false;
     },
     onPickFile() {
       this.$refs.imgUpload.click();
