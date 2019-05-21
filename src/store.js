@@ -36,7 +36,13 @@ export default new Vuex.Store({
       }
       return false;
     },
-    isCreator: (state) => (creatorId) => state.user.id == creatorId
+    isCreator: (state) => (creatorId) => state.user.id == creatorId,
+    isRegistered: (state) => (id) => {
+      let meetupIndex = state.user.registeredMeetups.findIndex(el => el.meetupId == id)
+      console.log(meetupIndex);
+      return meetupIndex >= 0
+    },
+    creatorRegister: (state) => (meetupId) => state.loadedMeetups.find(el => el.id == meetupId).creator == state.user.id
   },
   mutations: {
     setUser(state, payload) {
@@ -57,8 +63,11 @@ export default new Vuex.Store({
       state.error = null;
     },
     createMeetup(state, payload) {
-      console.log(3);
       state.loadedMeetups.push(payload);
+    },
+
+    setLoadedMeetups(state, payload) {
+      state.loadedMeetups = payload
     },
     beforeSubmit(state) {
       (state.error = null), (state.loading = true);
@@ -87,7 +96,16 @@ export default new Vuex.Store({
       if (payload.imageUrl != meetup.imageUrl) {
         meetup.imageUrl = payload.imageUrl;
       }
-    }
+    },
+    register(state, payload) {
+      let meetup = state.loadedMeetups.find(el => el.id == payload.meetupId)
+      state.user.registeredMeetups.push(payload)
+    },
+    unregister(state, payload) {
+      let meetupIndex = state.user.registeredMeetups.findIndex(el => el.meetupId == payload)
+      state.user.registeredMeetups.slice(meetupIndex, 1)
+    },
+
   },
   actions: {
     submitSignUp({ commit, state, dispatch }, payload) {
@@ -140,6 +158,7 @@ export default new Vuex.Store({
     logOut({ commit }) {
       localStorage.removeItem('user');
       commit('setUser', null);
+      commit('setLoadedMeetups', [])
       commit('setLoading', false);
       commit('setError', null);
       router.push({ name: 'login' });
@@ -148,8 +167,6 @@ export default new Vuex.Store({
       if (state.user) {
         commit('setLoading', true);
         commit('beforeSubmit');
-        let imageName = payload.image.name;
-        let ext = imageName.split('.')[1];
         let meetup = {
           title: payload.title,
           location: payload.location,
@@ -226,8 +243,6 @@ export default new Vuex.Store({
           console.log(err);
         });
       if (payload.image) {
-        let imageName = payload.image.name;
-        let ext = imageName.split('.')[1];
         firebase
           .storage()
           .ref(`meetups/${payload.id}`)
@@ -272,6 +287,33 @@ export default new Vuex.Store({
             commit('setError', err.message);
           });
       }
+    },
+    userRegister({ commit, state }, payload) {
+      console.log(payload);
+      //get meetup
+      console.log(state.loadedMeetups);
+      let meetup = state.loadedMeetups.find(el => el.id == payload)
+      console.log(meetup);
+      //check user
+      let user = state.user
+      if (meetup.creator == user.id) {
+        return
+      }
+      db.collection(`user`).doc(`${user.id}`).add({ meetupId: payload })
+        .then(res => {
+          console.log(res)
+          commit('register', { meetupId: payload, fbId: res.id })
+        })
+        .catch(err => console.log(err))
+
+    },
+    userUnregister({ commit, state }, payload) {
+      let meetup = state.user.registeredMeetups.find(el => el.meetupId == payload)
+      db.collection(`user`).delete().then(res => {
+        commit('unregister', payload)
+      }).catch(err => {
+        console.log(err);
+      })
     }
   }
 });

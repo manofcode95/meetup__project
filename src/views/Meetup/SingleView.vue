@@ -20,8 +20,9 @@
             <div class="info--text">{{ meetup.date }} - {{ meetup.location }}</div>
             <div>{{ meetup.description }}</div>
           </v-card-text>
-          <v-card-actions>
-            <v-btn class="text-uppercase primary" @click="register">register</v-btn>
+          <v-card-actions v-if="!registededByCreator">
+            <v-btn v-if="!isRegistered" class="text-uppercase primary" @click="register">register</v-btn>
+            <v-btn v-else class="text-uppercase primary" @click="unregister">Unregister</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -44,10 +45,21 @@ export default {
     },
     userIsCreator() {
       return this.$store.getters.isCreator(this.meetup.creator);
+    },
+    isRegistered() {
+      return this.$store.getters.isRegistered(this.id);
+    },
+    registededByCreator() {
+      return this.$store.getters.creatorRegister(this.id);
     }
   },
   methods: {
-    register() {},
+    register() {
+      this.$store.dispatch("userRegister", this.id);
+    },
+    unregister() {
+      this.$store.dispatch("userUnregister", this.id);
+    },
     onPickFile() {
       this.$refs.imgUpload.click();
     },

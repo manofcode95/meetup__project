@@ -16,7 +16,7 @@
           <strong>Time:</strong>
           {{meetup.time}}
         </span>
-        <p class="mt-3">{{meetup.description | trim}}</p>
+        <p style="height:50px" class="mt-3">{{meetup.description | trim}}</p>
       </div>
     </v-card-text>
     <v-card-actions>
